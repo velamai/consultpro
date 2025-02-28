@@ -27,6 +27,8 @@ const signupSchema = z
     path: ["confirmPassword"],
   });
 
+type SignupFormValues = z.infer<typeof signupSchema>;
+
 export default function SignupPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -37,18 +39,18 @@ export default function SignupPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = async (formData: any) => {
+  const onSubmit = async (formData: SignupFormValues) => {
     setLoading(true);
     try {
       const API_URL =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://consultpro.ksangeeth76.workers.dev";
 
-      const res = await fetch(`${API_URL}/auth/signup`, {
+      const res = await fetch(`${API_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
