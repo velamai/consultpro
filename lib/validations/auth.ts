@@ -22,7 +22,7 @@ export const signupSchema = z.object({
   name: z.string()
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name cannot exceed 50 characters")
-    .regex(/^[a-zA-Z\s'-]+$/, "Name can only contain letters, spaces, hyphens and apostrophes"),
+    .regex(/^[a-zA-Z\s'-]+₹/, "Name can only contain letters, spaces, hyphens and apostrophes"),
   email: z.string()
     .email("Please enter a valid email address")
     .min(5, "Email must be at least 5 characters")
@@ -54,13 +54,13 @@ export const profileUpdateSchema = z.object({
   name: z.string()
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name cannot exceed 50 characters")
-    .regex(/^[a-zA-Z\s'-]+$/, "Name can only contain letters, spaces, hyphens and apostrophes"),
+    .regex(/^[a-zA-Z\s'-]+₹/, "Name can only contain letters, spaces, hyphens and apostrophes"),
   email: z.string()
     .email("Please enter a valid email address")
     .min(5, "Email must be at least 5 characters")
     .max(254, "Email cannot exceed 254 characters"),
   phone: z.string()
-    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number")
+    .regex(/^\+?[1-9]\d{1,14}₹/, "Please enter a valid phone number")
     .optional(),
   emailNotifications: z.boolean(),
   smsNotifications: z.boolean()

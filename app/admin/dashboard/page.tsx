@@ -1,24 +1,71 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Settings, LogOut, Users, Bell, Search, LayoutGrid, LayoutList, Video, Calendar, Clock } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Settings, LogOut, Users, Bell, Search, LayoutGrid, LayoutList, Video, Calendar, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { toast } from "sonner"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton"; // Add this import
 
 export default function AdminDashboard() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const router = useRouter();
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch bookings data
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://consultpro.ksangeeth76.workers.dev";
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`${API_URL}/bookings`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
+
+        const data = await response.json();
+        setBookings(data.bookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast.error("Failed to fetch bookings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  // Filter bookings to show only upcoming or today's bookings
+  const filterUpcomingBookings = (bookings) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to the start of the day
+
+    return bookings.filter((booking) => {
+      const bookingDate = new Date(booking.calendarDate);
+      return bookingDate >= today;
+    });
+  };
+
+  const upcomingBookings = filterUpcomingBookings(bookings);
 
   const stats = [
     {
@@ -30,52 +77,19 @@ export default function AdminDashboard() {
     },
     {
       title: "Active Bookings",
-      value: "56",
+      value: upcomingBookings.length.toString(),
       icon: Settings,
       change: "+8%",
       href: "/admin/bookings"
     },
     {
       title: "Revenue",
-      value: "$12,345",
+      value: "₹12,345",
       icon: Users,
       change: "+23%",
       href: "/admin/revenue"
     },
-  ]
-
-  const upcomingMeets = [
-    {
-      id: "MEET-001",
-      title: "Business Strategy Consultation",
-      client: "John Doe",
-      consultant: "Dr. Sarah Johnson",
-      time: "10:00 AM",
-      date: "2024-03-25",
-      duration: "60 minutes",
-      meetLink: "https://meet.zoom.us/j/123456789"
-    },
-    {
-      id: "MEET-002",
-      title: "Financial Planning Session",
-      client: "Jane Smith",
-      consultant: "Michael Chen",
-      time: "2:00 PM",
-      date: "2024-03-25",
-      duration: "45 minutes",
-      meetLink: "https://meet.zoom.us/j/987654321"
-    },
-    {
-      id: "MEET-003",
-      title: "Marketing Strategy Review",
-      client: "Alice Johnson",
-      consultant: "Emily Brown",
-      time: "4:30 PM",
-      date: "2024-03-25",
-      duration: "30 minutes",
-      meetLink: "https://meet.zoom.us/j/456789123"
-    }
-  ]
+  ];
 
   const menuItems = [
     {
@@ -102,21 +116,14 @@ export default function AdminDashboard() {
       href: "/admin/settings",
       icon: Settings,
     },
-  ]
+  ];
 
-  useEffect(() => {
-    const userRole = localStorage.getItem("userRole")
-    if (userRole !== "admin") {
-      toast.error("Unauthorized access")
-      router.push("/auth/login")
-    } else {
-      setIsLoading(false)
-    }
-  }, [router])
-
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('token');
+    toast.success("Logged out successfully");
+    router.push("/auth/login");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,10 +141,7 @@ export default function AdminDashboard() {
               </Button>
               <Bell className="h-5 w-5 text-muted-foreground cursor-pointer" />
               <ThemeToggle />
-              <Button variant="ghost" size="icon" onClick={() => {
-                localStorage.removeItem("userRole")
-                router.push("/auth/login")
-              }}>
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
@@ -193,60 +197,67 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Upcoming Meet Links */}
+        {/* Upcoming Bookings */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Video className="h-5 w-5 text-primary" />
-              Today's Meet Links
+              <Calendar className="h-5 w-5 text-primary" />
+              Upcoming Bookings
             </CardTitle>
-            <CardDescription>Quick access to today's consultation sessions</CardDescription>
+            <CardDescription>List of upcoming consultation bookings</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {upcomingMeets.map((meet) => (
-                <div
-                  key={meet.id}
-                  className="bg-muted p-4 rounded-lg"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold">{meet.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {meet.date}
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, index) => (
+                  <Skeleton key={index} className="h-20 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {upcomingBookings.length > 0 ? (
+                  upcomingBookings.map((booking) => (
+                    <div
+                      key={booking.uid}
+                      className="bg-muted p-4 rounded-lg"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold">{booking.name}</h3>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(booking.calendarDate).toLocaleDateString()}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {new Date(booking.calendarDate).toLocaleTimeString()}
+                            </div>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Email:</span> {booking.email} |{" "}
+                            <span className="text-muted-foreground">Status:</span> {booking.status}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {meet.time} ({meet.duration})
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              navigator.clipboard.writeText(booking.fileurl);
+                              toast.success("File URL copied to clipboard");
+                            }}
+                            variant="outline"
+                          >
+                            Join Meeting
+                          </Button>
                         </div>
                       </div>
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Client:</span> {meet.client} |{" "}
-                        <span className="text-muted-foreground">Consultant:</span> {meet.consultant}
-                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          navigator.clipboard.writeText(meet.meetLink)
-                          toast.success("Meet link copied to clipboard")
-                        }}
-                        variant="outline"
-                      >
-                        Copy Link
-                      </Button>
-                      <Button
-                        onClick={() => window.open(meet.meetLink, "_blank")}
-                      >
-                        Join Meeting
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground">No upcoming bookings found.</p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -286,5 +297,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

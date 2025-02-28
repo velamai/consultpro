@@ -145,10 +145,10 @@ export default function AdminPaymentsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="font-medium">${payment.amount.toFixed(2)}</span>
+                      <span className="font-medium">₹{payment.amount.toFixed(2)}</span>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ₹{getStatusColor(payment.status)}`}>
                         {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                       </span>
                     </TableCell>
@@ -162,7 +162,7 @@ export default function AdminPaymentsPage() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => router.push(`/admin/payments/${payment.id}`)}
+                        onClick={() => router.push(`/admin/payments/₹{payment.id}`)}
                       >
                         View Details
                       </Button>

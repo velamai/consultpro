@@ -49,7 +49,7 @@ export function BookingDetailsDialog({
   if (!booking) return null
 
   const handleStatusChange = (newStatus: string) => {
-    toast.success(`Booking status updated to ${newStatus}`)
+    toast.success(`Booking status updated to ₹{newStatus}`)
   }
 
   const handleJoinMeeting = () => {
@@ -120,7 +120,7 @@ export function BookingDetailsDialog({
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
                       <div className="flex gap-2">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ₹{getStatusColor(booking.status)}`}>
                           {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                         </span>
                         <Button variant="outline" size="sm" onClick={() => handleStatusChange("confirmed")}>
@@ -185,13 +185,13 @@ export function BookingDetailsDialog({
                   <div className="flex items-center gap-2">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Amount</p>
-                      <p className="font-medium">${booking.amount.toFixed(2)}</p>
+                      <p className="font-medium">₹{booking.amount.toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Status</p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ₹{
                         booking.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1)}

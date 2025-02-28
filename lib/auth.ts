@@ -1,51 +1,66 @@
-import { z } from "zod"
+import { jwtDecode } from "jwt-decode";
 
-export interface User {
-  id: string
-  email: string
-  role: string
-  name: string
+export interface DecodedToken {
+  uuid: string;
+  role: string;
+  exp: number;
 }
 
-export interface AuthResponse {
-  success: boolean
-  user?: User
-  message?: string
-  errors?: any[]
+export function getToken(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('token');
+  }
+  return null;
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  try {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    })
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    return {
-      success: false,
-      message: "Failed to login. Please try again.",
+export function isAuthenticated(): boolean {
+  const token = getToken();
+  if (!token) {
+    // Check if we have a userRole in localStorage (for development/testing)
+    if (typeof window !== 'undefined' && localStorage.getItem('userRole')) {
+      return true;
     }
+    return false;
+  }
+  
+  try {
+    const decoded = jwtDecode<DecodedToken>(token);
+    const currentTime = Date.now() / 1000;
+    
+    return decoded.exp > currentTime;
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return false;
   }
 }
 
-export async function logout(): Promise<AuthResponse> {
-  try {
-    const response = await fetch("/api/auth/logout", {
-      method: "POST",
-    })
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    return {
-      success: false,
-      message: "Failed to logout. Please try again.",
+export function getUserRole(): string | null {
+  const token = getToken();
+  if (!token) {
+    // For development/testing, check localStorage
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('userRole');
     }
+    return null;
+  }
+  
+  try {
+    const decoded = jwtDecode<DecodedToken>(token);
+    return decoded.role;
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+}
+
+export function isadmin(): boolean {
+  const role = getUserRole();
+  return role === 'admin';
+}
+
+export function clearAuth(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
   }
 }

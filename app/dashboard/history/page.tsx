@@ -1,76 +1,84 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Settings, LogOut, Users, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Settings, LogOut, Users, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { toast } from "sonner"
+} from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { toast } from "sonner";
+import { jwtDecode } from "jwt-decode";
 
-interface ConsultationHistory {
-  id: string
-  title: string
-  date: string
-  paymentId: string
-  meetLink: string
-  status: "completed" | "cancelled"
+interface Booking {
+  uid: string;
+  name: string;
+  email: string;
+  calendarDate: string;
+  fileurl: string;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function HistoryPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Mock history data - in a real app, this would come from your backend
-  const historyData: ConsultationHistory[] = [
-    {
-      id: "1",
-      title: "Business Strategy Review",
-      date: "2024-03-15 14:00",
-      paymentId: "PAY-123456",
-      meetLink: "https://meet.zoom.us/j/123456789",
-      status: "completed"
-    },
-    {
-      id: "2",
-      title: "Financial Planning Session",
-      date: "2024-03-10 11:00",
-      paymentId: "PAY-789012",
-      meetLink: "https://meet.zoom.us/j/987654321",
-      status: "completed"
-    },
-    {
-      id: "3",
-      title: "Marketing Strategy Consultation",
-      date: "2024-03-05 15:30",
-      paymentId: "PAY-345678",
-      meetLink: "https://meet.zoom.us/j/456789123",
-      status: "cancelled"
-    }
-  ]
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
-    const userRole = localStorage.getItem("userRole")
-    if (!userRole) {
-      toast.error("Please login to access history")
-      router.push("/auth/login")
-    } else {
-      setIsLoading(false)
-    }
-  }, [router])
+    const fetchBookings = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login to access history");
+        router.push("/auth/login");
+        return;
+      }
+
+      try {
+        // Decode the token to get the user ID
+        const payload = jwtDecode<{ uuid: string; role: string }>(token);
+        const userid = payload.uuid;
+
+        // Fetch bookings for the user
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://consultpro.ksangeeth76.workers.dev";
+        const response = await fetch(`${API_URL}/bookings/user/${userid}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
+
+        const data = await response.json();
+        setBookings(data.bookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast.error("Failed to fetch bookings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [router]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg">Loading...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -126,35 +134,37 @@ export default function HistoryPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {historyData.map((session) => (
+              {bookings.map((booking) => (
                 <div
-                  key={session.id}
+                  key={booking.uid}
                   className="bg-muted p-4 rounded-lg"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold">{session.title}</h3>
-                      <p className="text-sm text-muted-foreground">{session.date}</p>
-                      <p className="text-sm">Payment ID: {session.paymentId}</p>
-                      <span className={`text-sm ${
-                        session.status === "completed" ? "text-green-500" : "text-red-500"
-                      }`}>
-                        Status: {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
-                      </span>
+                      <h3 className="font-semibold">{booking.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(booking.calendarDate).toLocaleDateString()} at{" "}
+                        {new Date(booking.calendarDate).toLocaleTimeString()}
+                      </p>
+                      <p className="text-sm">Status: {booking.status}</p>
+                      <p className="text-sm">Payment Status: {booking.paymentStatus}</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
-                      {session.status === "completed" && (
+                      {booking.status === "confirmed" && (
                         <Button
-                          onClick={() => window.open(session.meetLink, "_blank")}
+                          onClick={() => window.open(booking.fileurl, "_blank")}
                         >
-                          View Recording
+                          View Details
                         </Button>
                       )}
-                      <Button variant="outline" onClick={() => {
-                        navigator.clipboard.writeText(session.paymentId)
-                        toast.success("Payment ID copied to clipboard")
-                      }}>
-                        Copy Payment ID
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(booking.uid);
+                          toast.success("Booking ID copied to clipboard");
+                        }}
+                      >
+                        Copy Booking ID
                       </Button>
                     </div>
                   </div>
@@ -165,5 +175,5 @@ export default function HistoryPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

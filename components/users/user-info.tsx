@@ -57,7 +57,7 @@ export function UserInfo({ user }: UserInfoProps) {
     {
       icon: Wallet,
       label: "Total Spent",
-      value: `$${user.totalSpent.toFixed(2)}`
+      value: `₹₹{user.totalSpent.toFixed(2)}`
     }
   ]
 

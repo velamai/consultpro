@@ -128,7 +128,7 @@ export default function AdminUsersPage() {
   }
 
   const handleDeleteUser = (user: User) => {
-    toast.success(`User ${user.name} deleted successfully`)
+    toast.success(`User ₹{user.name} deleted successfully`)
     setSelectedUser(null)
   }
 
@@ -228,14 +228,14 @@ export default function AdminUsersPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Shield className={`h-4 w-4 ${getRoleColor(user.role)}`} />
-                        <span className={`font-medium ${getRoleColor(user.role)}`}>
+                        <Shield className={`h-4 w-4 ₹{getRoleColor(user.role)}`} />
+                        <span className={`font-medium ₹{getRoleColor(user.role)}`}>
                           {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ₹{getStatusColor(user.status)}`}>
                         {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                       </span>
                     </TableCell>

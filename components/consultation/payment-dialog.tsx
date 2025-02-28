@@ -41,11 +41,11 @@ export function PaymentDialog({ formData, onBack, onComplete }: PaymentDialogPro
       
       // Initialize Cashfree payment session
       const session = await initCashfree({
-        orderId: `ORDER-${Date.now()}`,
+        orderId: `ORDER-₹{Date.now()}`,
         orderAmount: amount,
         orderCurrency: "INR",
         customerDetails: {
-          customerId: `CUST-${Date.now()}`,
+          customerId: `CUST-₹{Date.now()}`,
           customerEmail: formData.clientEmail || "",
           customerPhone: "9999999999", // Required by Cashfree
           customerName: formData.clientName || ""
@@ -80,11 +80,11 @@ export function PaymentDialog({ formData, onBack, onComplete }: PaymentDialogPro
 
       // Initialize Razorpay order
       const order = await initRazorpay({
-        orderId: `ORDER-${Date.now()}`,
+        orderId: `ORDER-₹{Date.now()}`,
         amount: amount,
         currency: "INR",
         customerDetails: {
-          customerId: `CUST-${Date.now()}`,
+          customerId: `CUST-₹{Date.now()}`,
           customerEmail: formData.clientEmail || "",
           customerPhone: "9999999999",
           customerName: formData.clientName || ""

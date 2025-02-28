@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = verifySchema.parse(body)
 
     // Verify signature
-    const text = `${razorpay_order_id}|${razorpay_payment_id}`
+    const text = `₹{razorpay_order_id}|₹{razorpay_payment_id}`
     const generated_signature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
       .update(text)

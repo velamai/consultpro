@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { orderId } = verifySchema.parse(body)
 
-    const response = await fetch(`${cashfreeBaseUrl}/orders/${orderId}`, {
+    const response = await fetch(`₹{cashfreeBaseUrl}/orders/₹{orderId}`, {
       headers: {
         "x-api-version": "2022-09-01",
         "x-client-id": cashfreeApiKey,

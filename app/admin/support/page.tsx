@@ -150,14 +150,14 @@ export default function AdminSupportPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ₹{getStatusColor(ticket.status)}`}>
                         {ticket.status.split("-").map(word => 
                           word.charAt(0).toUpperCase() + word.slice(1)
                         ).join(" ")}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className={`font-medium ${getPriorityColor(ticket.priority)}`}>
+                      <span className={`font-medium ₹{getPriorityColor(ticket.priority)}`}>
                         {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
                       </span>
                     </TableCell>
@@ -168,7 +168,7 @@ export default function AdminSupportPage() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => router.push(`/admin/support/${ticket.id}`)}
+                        onClick={() => router.push(`/admin/support/₹{ticket.id}`)}
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
                         View Ticket

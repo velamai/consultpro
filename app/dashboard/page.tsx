@@ -1,28 +1,30 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Calendar, Clock, FileText, Users, Settings, LogOut, CreditCard, Info } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Calendar, Clock, FileText, Users, Settings, LogOut, CreditCard, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { ConsultationForm } from "@/components/consultation-form"
-import { toast } from "sonner"
+} from "@/components/ui/hover-card";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ConsultationForm } from "@/components/consultation-form";
+import { toast } from "sonner";
+import { jwtDecode } from "jwt-decode";
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [bookings, setBookings] = useState<any[]>([]);
 
   // Mock pending payments data
   const pendingPayments = [
@@ -44,33 +46,65 @@ export default function DashboardPage() {
       duration: "45 minutes",
       scheduledFor: "March 27, 2024 2:00 PM"
     }
-  ]
+  ];
 
+  // Fetch bookings for the logged-in user
   useEffect(() => {
-    const isLoggedIn = true
-    if (!isLoggedIn) {
-      router.push("/auth/login")
-    } else {
-      setIsLoading(false)
-    }
-  }, [router])
+    const fetchBookings = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/auth/login");
+        return;
+      }
+
+      try {
+        // Decode the token to get the user ID
+        const payload = jwtDecode<{ uuid: string; role: string }>(token);
+        const userid = payload.uuid;
+
+        // Fetch bookings for the user
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://consultpro.ksangeeth76.workers.dev";
+        const response = await fetch(`${API_URL}/bookings/user/${userid}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
+
+        const data = await response.json();
+        setBookings(data.bookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast.error("Failed to fetch bookings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [router]);
 
   const handleConsultationSubmit = async (data: any) => {
-    console.log("New consultation data:", data)
-    toast.success("Consultation scheduled successfully")
-  }
+    console.log("New consultation data:", data);
+    toast.success("Consultation scheduled successfully");
+  };
 
   const handlePayment = (paymentId: string) => {
-    toast.success(`Processing payment for ${paymentId}`)
+    toast.success(`Processing payment for ₹{paymentId}`);
     // Implement payment processing logic here
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg">Loading...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -124,7 +158,7 @@ export default function DashboardPage() {
               <CardDescription>Your scheduled consultations</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">2</p>
+              <p className="text-2xl font-bold">{bookings.length}</p>
             </CardContent>
           </Card>
 
@@ -163,24 +197,23 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">Business Strategy Consultation</h3>
-                    <p className="text-sm text-muted-foreground">Tomorrow at 10:00 AM</p>
+              {bookings.map((booking) => (
+                <div
+                  key={booking.uid}
+                  className="bg-muted p-4 rounded-lg"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">{booking.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(booking.calendarDate).toLocaleDateString()} at{" "}
+                        {new Date(booking.calendarDate).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <Button>Join Meeting</Button>
                   </div>
-                  <Button>Join Meeting</Button>
                 </div>
-              </div>
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">Financial Planning Review</h3>
-                    <p className="text-sm text-muted-foreground">Friday at 2:00 PM</p>
-                  </div>
-                  <Button>Join Meeting</Button>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -205,7 +238,7 @@ export default function DashboardPage() {
                     <div>
                       <h3 className="font-semibold">{payment.title}</h3>
                       <p className="text-sm text-muted-foreground">Due by: {payment.dueDate}</p>
-                      <p className="text-sm font-medium text-primary">${payment.amount}</p>
+                      <p className="text-sm font-medium text-primary">₹{payment.amount}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <HoverCard>
@@ -221,7 +254,7 @@ export default function DashboardPage() {
                               <p><span className="font-medium">Consultant:</span> {payment.consultant}</p>
                               <p><span className="font-medium">Duration:</span> {payment.duration}</p>
                               <p><span className="font-medium">Scheduled for:</span> {payment.scheduledFor}</p>
-                              <p><span className="font-medium">Amount:</span> ${payment.amount}</p>
+                              <p><span className="font-medium">Amount:</span> ₹{payment.amount}</p>
                               <p><span className="font-medium">Payment ID:</span> {payment.id}</p>
                             </div>
                           </div>
@@ -260,5 +293,5 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

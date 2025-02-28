@@ -99,7 +99,7 @@ export default function TicketDetailsPage({ params }: { params: { id: string } }
 
   const handleStatusChange = (newStatus: string) => {
     // In a real app, this would make an API call
-    toast.success(`Ticket status updated to ${newStatus}`)
+    toast.success(`Ticket status updated to ₹{newStatus}`)
   }
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -205,7 +205,7 @@ export default function TicketDetailsPage({ params }: { params: { id: string } }
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
                     <div className="flex gap-2">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ₹{getStatusColor(ticket.status)}`}>
                         {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
                       </span>
                       <Button variant="outline" size="sm" onClick={() => handleStatusChange("in-progress")}>
@@ -218,7 +218,7 @@ export default function TicketDetailsPage({ params }: { params: { id: string } }
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-2">Priority</p>
-                    <span className={`font-medium ${getPriorityColor(ticket.priority)}`}>
+                    <span className={`font-medium ₹{getPriorityColor(ticket.priority)}`}>
                       {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
                     </span>
                   </div>
@@ -260,9 +260,9 @@ export default function TicketDetailsPage({ params }: { params: { id: string } }
                 {ticket.messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex flex-col ${message.isAdmin ? 'items-end' : 'items-start'}`}
+                    className={`flex flex-col ₹{message.isAdmin ? 'items-end' : 'items-start'}`}
                   >
-                    <div className={`max-w-[80%] rounded-lg p-4 ${
+                    <div className={`max-w-[80%] rounded-lg p-4 ₹{
                       message.isAdmin ? 'bg-primary text-primary-foreground' : 'bg-muted'
                     }`}>
                       <div className="flex items-center gap-2 mb-2">

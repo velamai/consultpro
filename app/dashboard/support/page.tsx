@@ -146,7 +146,7 @@ export default function SupportPage() {
                       <p className="text-sm text-muted-foreground">Created: {ticket.date}</p>
                       <p className="text-sm">Ticket ID: {ticket.ticketId}</p>
                       <p className="text-sm text-muted-foreground">Last update: {ticket.lastUpdate}</p>
-                      <span className={`text-sm ${
+                      <span className={`text-sm ₹{
                         ticket.status === "open" ? "text-blue-500" : 
                         ticket.status === "in-progress" ? "text-yellow-500" : 
                         "text-green-500"

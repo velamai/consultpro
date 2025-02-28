@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validatedData = sessionSchema.parse(body)
 
-    const response = await fetch(`${cashfreeBaseUrl}/orders`, {
+    const response = await fetch(`₹{cashfreeBaseUrl}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
           customer_name: validatedData.customerDetails.customerName
         },
         order_meta: {
-          return_url: `${request.headers.get("origin")}/payment/callback?order_id={order_id}`
+          return_url: `₹{request.headers.get("origin")}/payment/callback?order_id={order_id}`
         }
       })
     })

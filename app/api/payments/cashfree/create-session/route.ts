@@ -37,7 +37,7 @@ export async function POST(request: Request) {
           customer_name: validatedData.customerDetails.customerName
         },
         order_meta: {
-          return_url: `${request.headers.get("origin")}/payment/callback?order_id={order_id}`
+          return_url: `₹{request.headers.get("origin")}/payment/callback?order_id={order_id}`
         }
       })
     })
