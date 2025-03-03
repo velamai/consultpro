@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,42 +12,30 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Define Zod Schema
-const signupSchema = z
-  .object({
-    email: z.string().email("Invalid email format"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type SignupFormValues = z.infer<typeof signupSchema>;
-
 export default function SignupPage() {
   const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [socialLoading, setSocialLoading] = useState(false);
 
-  // React Hook Form Setup
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignupFormValues>({
-    resolver: zodResolver(signupSchema),
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
 
-  const onSubmit = async (formData: SignupFormValues) => {
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://consultpro.ksangeeth76.workers.dev";
-
-      const res = await fetch(`${API_URL}/users`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://consultpro.ksangeeth76.workers.dev";
+      const res = await fetch(`₹{API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,22 +50,30 @@ export default function SignupPage() {
       toast.success("Signup successful! Redirecting to login...");
       router.push("/auth/login");
     } catch (err: any) {
-      toast.error(err.message || "Signup failed. Please try again.");
+      setError(err.message);
+      toast.error("Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+
   const handleGoogleLogin = () => {
     setSocialLoading(true);
     toast.info("Google login is not yet implemented.");
-    setTimeout(() => setSocialLoading(false), 2000);
+    setTimeout(() => setSocialLoading(false), 2000); // Simulate loading
   };
 
   const handleFacebookLogin = () => {
     setSocialLoading(true);
     toast.info("Facebook login is not yet implemented.");
-    setTimeout(() => setSocialLoading(false), 2000);
+    setTimeout(() => setSocialLoading(false), 2000); // Simulate loading
   };
 
   return (
@@ -92,18 +85,17 @@ export default function SignupPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                {...register("email")}
+                value={formData.email}
+                onChange={handleChange}
+                required
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -111,11 +103,10 @@ export default function SignupPage() {
                 id="password"
                 type="password"
                 placeholder="Create a password"
-                {...register("password")}
+                value={formData.password}
+                onChange={handleChange}
+                required
               />
-              {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password.message}</p>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -123,14 +114,12 @@ export default function SignupPage() {
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                {...register("confirmPassword")}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
               />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing Up..." : "Sign Up"}
             </Button>
@@ -174,9 +163,7 @@ export default function SignupPage() {
           </div>
 
           <div className="mt-4 text-center text-sm">
-            <span className="text-muted-foreground">
-              Already have an account?{" "}
-            </span>
+            <span className="text-muted-foreground">Already have an account? </span>
             <Link href="/auth/login" className="text-primary hover:underline">
               Login
             </Link>
